@@ -1,43 +1,31 @@
 flowchart TD
-  subgraph Client[Web / Mobile Client]
-    A[Recorder UI
-(鼻歌録音/アップロード)] --> B[On-device Preprocessing
-- ノイズ除去
-- ラウドネス正規化]
-    B --> C[Pitch & Onset Estimator
-(WebAudio + WASM/TF.js)]
-    C -->|melody.json (notes), tempo| D[Preview UI
-- ピッチ可視化
-- メトロノーム]
-    D -->|/v1/arrange| S
-    A -->|raw audio| U
-  end
+subgraph Client["Web / Mobile Client"]
+A["Recorder UI<br/>(鼻歌録音/アップロード)"] --> B["On-device Preprocessing<br/>- ノイズ除去<br/>- ラウドネス正規化"]
+B --> C["Pitch & Onset Estimator<br/>(WebAudio + WASM/TF.js)"]
+C -->|"melody.json (notes), tempo"| D["Preview UI<br/>- ピッチ可視化<br/>- メトロノーム"]
+D -->|/v1/arrange| S
+A -->|raw audio| U
+end
 
-  subgraph Edge[CDN/Edge]
-    U[Upload to Signed URL] --> V[Object Storage
-(原音 .wav)]
-    S[Arrange Request
-(JSON)] --> W[API Gateway]
-  end
 
-  subgraph Backend[Backend Services]
-    W --> X[Auth & Rate-limit]
-    X --> Y[(Task Queue)]
-    Y --> Z[Orchestrator]
-    Z --> M1[Melody Cleaner
-(音高補正/テンポ推定)]
-    M1 --> M2[Harmony/Chord Model
-(Transformer)]
-    M2 --> M3[Arrangement Engine
-(ジャンル/スタイル)]
-    M3 --> M4[Rendering
-- MIDI生成
-- 楽譜(MusicXML)
-- stems生成]
-    M4 --> M5[Audio Synthesis
-(DDSP/サンプラー)]
-    M5 --> R[(Result Storage)]
-  end
+subgraph Edge["CDN/Edge"]
+U["Upload to Signed URL"] --> V["Object Storage<br/>(原音 .wav)"]
+S["Arrange Request<br/>(JSON)"] --> W["API Gateway"]
+end
 
-  R --> CDN[(CDN)]
-  CDN --> Client
+
+subgraph Backend["Backend Services"]
+W --> X["Auth & Rate-limit"]
+X --> Y[(Task Queue)]
+Y --> Z["Orchestrator"]
+Z --> M1["Melody Cleaner<br/>(音高補正/テンポ推定)"]
+M1 --> M2["Harmony/Chord Model<br/>(Transformer)"]
+M2 --> M3["Arrangement Engine<br/>(ジャンル/スタイル)"]
+M3 --> M4["Rendering<br/>- MIDI生成<br/>- 楽譜(MusicXML)<br/>- stems生成"]
+M4 --> M5["Audio Synthesis<br/>(DDSP/サンプラー)"]
+M5 --> R[(Result Storage)]
+end
+
+
+R --> CDN[(CDN)]
+CDN --> Client
